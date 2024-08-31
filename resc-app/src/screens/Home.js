@@ -9,7 +9,6 @@ import { useState } from 'react';
 export default function Home() {
   return (
     <>
-    <Navbar/>
       <section>
         <div>
           <Carou

@@ -1,39 +1,61 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
-
+import axios from 'axios'; // Make sure axios is imported
+import { toast } from 'react-toastify';
 export default function Adminlog() {
   const navigate = useNavigate();
 
-  // State variables for email and password
-  const [email, setEmail] = React.useState('');
-  const [licenceid, setlicid] = React.useState('');
-  const [distype, settype] = React.useState('');
-  const [password, setPassword] = React.useState('');
-  const handleSubmit = (e) => {
+  // State variables for form fields
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [licence, setLicence] = useState('');
+  const [disaster, setDisaster] = useState('');
+  const [password, setPassword] = useState('');
+  const [resrc, setSrc] = useState('');
+  const [address, setAddr] = useState('');
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
   
-    // Perform admin login logic here, for example, check credentials
-    if (email === 'admin@example.com' && password === 'password') {
-      // If login is successful, navigate to Dash1
-      navigate('/dash1', { state: { alert: 'Login successful!' } });
-    } else {
-      // Handle login failure (e.g., display an error message)
-      alert('Invalid credentials. Please try again.');
+    try {
+      const response = await axios.post("http://localhost:3001/register", {
+        name,
+        email,
+        licence,
+        disaster,
+        password,
+        resrc,
+        address,
+      });
+  
+      const token = response.data.token;  
+      if (token) {
+        localStorage.setItem("token", token);
+        toast.success('Registration successful.');
+        setShowModal(false);
+        setTimeout(() => {
+          navigate('/');
+        }, 500); 
+      } else {
+        toast.error('Registration failed. No token received.');
+      }
+    } catch (err) {
+      if (err.response) {
+        if (err.response.status === 400) {
+          toast.error('User already registered.');
+        } else {
+          toast.error('An error occurred.');
+        }
+      } else if (err.request) {
+        toast.error('No response received from server.');
+      } else {
+        toast.error('Error during request setup.');
+      }
     }
   };
+  
+  
   const [showModal, setShowModal] = useState(false);
-  const [preventShow, setPreventShow] = useState(false);
-
-  useEffect(() => {
-    const modalElement = document.getElementById("exampleModal");
-
-    modalElement.addEventListener("hide.bs.modal", function (event) {
-      if (preventShow) {
-        event.preventDefault();
-        setPreventShow(false);
-      }
-    });
-  }, []);
 
   const handleShowModal = () => {
     setShowModal(true);
@@ -41,7 +63,6 @@ export default function Adminlog() {
 
   const handleCloseModal = () => {
     setShowModal(false);
-    setPreventShow(true);
   };
 
   return (
@@ -65,7 +86,7 @@ export default function Adminlog() {
           <div className="modal-content">
             <div className="modal-header">
               <h5 className="modal-title" id="exampleModalLabel">
-                Modal title
+                User Registration
               </h5>
               <button
                 type="button"
@@ -80,7 +101,21 @@ export default function Adminlog() {
                 <h4 className="mx-5">Register</h4>
                 <form onSubmit={handleSubmit}>
                   <div className="mb-3 mt-3">
-                    <label htmlFor="exampleInputEmail1" className="form-label">
+                    <label htmlFor="name" className="form-label">
+                      Agency Name
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="name"
+                      placeholder="Enter your name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3 mt-3">
+                    <label htmlFor="email" className="form-label">
                       Email address
                     </label>
                     <input
@@ -94,35 +129,63 @@ export default function Adminlog() {
                     />
                   </div>
                   <div className="mb-3 mt-3">
-                    <label htmlFor="exampleInputname" className="form-label">
+                    <label htmlFor="disaster" className="form-label">
                       Type of Disaster
                     </label>
                     <input
                       type="text"
                       className="form-control"
-                      id="name"
+                      id="disaster"
                       placeholder="Enter the type of disaster"
-                      value={distype}
-                      onChange={(e) => settype(e.target.value)}
+                      value={disaster}
+                      onChange={(e) => setDisaster(e.target.value)}
                       required
                     />
                   </div>
                   <div className="mb-3 mt-3">
-                    <label htmlFor="exampleInputId1" className="form-label">
+                    <label htmlFor="licence" className="form-label">
                       Licence Id
                     </label>
                     <input
-                      type="email"
+                      type="text"
                       className="form-control"
-                      id="email"
+                      id="licence"
                       placeholder="Enter the licence id"
-                      value={licenceid}
-                      onChange={(e) => setlicid(e.target.value)}
+                      value={licence}
+                      onChange={(e) => setLicence(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3 mt-3">
+                    <label htmlFor="licence" className="form-label">
+                      Available Resources
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="resrc"
+                      placeholder="Enter the resources"
+                      value={resrc}
+                      onChange={(e) => setSrc(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="mb-3 mt-3">
+                    <label htmlFor="address" className="form-label">
+                      Address
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control"
+                      id="address"
+                      placeholder="Enter the Address"
+                      value={address}
+                      onChange={(e) => setAddr(e.target.value)}
                       required
                     />
                   </div>
                   <div className="mb-3">
-                    <label htmlFor="exampleInputPassword1" className="form-label">
+                    <label htmlFor="password" className="form-label">
                       Password
                     </label>
                     <input
@@ -134,16 +197,6 @@ export default function Adminlog() {
                       onChange={(e) => setPassword(e.target.value)}
                       required
                     />
-                  </div>
-                  <div className="mb-3 form-check">
-                    <input
-                      type="checkbox"
-                      className="form-check-input"
-                      id="exampleCheck1"
-                    />
-                    <label className="form-check-label" htmlFor="exampleCheck1">
-                      Check me out
-                    </label>
                   </div>
                   <button type="submit" className="btn btn-primary">
                     Submit
@@ -159,9 +212,6 @@ export default function Adminlog() {
                 onClick={handleCloseModal}
               >
                 Close
-              </button>
-              <button type="button" className="btn btn-primary">
-                Save changes
               </button>
             </div>
           </div>

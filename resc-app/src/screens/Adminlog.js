@@ -1,25 +1,44 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from 'react-router-dom';
-
+import axios from "axios";
 export default function Adminlog() {
-  const navigate = useNavigate();
-
-  // State variables for email and password
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   // Function to handle form submission
-  const handleSubmit = (e) => {
-    e.preventDefault();
-  
-    // Perform admin login logic here, for example, check credentials
-    if (email === 'admin@example.com' && password === 'password') {
-      // If login is successful, navigate to Dash1
-      navigate('/dash1');
-    } else {
-      // Handle login failure (e.g., display an error message)
-      alert('Invalid credentials. Please try again.');
-    }
-  };
+  const [error, setError] = useState('');
+    const navigate = useNavigate();
+    const handleLogin = async (e) => {
+        e.preventDefault();
+
+        try {
+            console.log("ref") ;
+            const URL='http://localhost:3001/login'
+            const response = await axios.post(URL,{
+                email,password
+            });
+            console.log(response) ;
+            const token=response.data.token;
+
+            if(response.data.user.isAdmin===true){
+              setShowModal(false);
+              if(token){
+                  localStorage.setItem('token',token);
+              }
+              navigate('/dash1');
+            }
+            else{
+              setShowModal(false);
+              navigate('/')
+            }
+            // Navigate to the dashboard or any other page
+        } catch (err) {
+            if (err.response && err.response.status === 401) {
+                setError('Invalid email or password');
+            } else {
+                setError('An error occurred during login. Please try again.');
+            }
+        }
+    };
   const [showModal, setShowModal] = useState(false);
   const [preventShow, setPreventShow] = useState(false);
 
@@ -77,7 +96,7 @@ export default function Adminlog() {
             <div className="modal-body">
               <div className="text-dark">
                 <h4 className="mx-5">Admin login</h4>
-                <form onSubmit={handleSubmit}>
+                <form onSubmit={handleLogin}>
                   <div className="mb-3 mt-3">
                     <label htmlFor="exampleInputEmail1" className="form-label">
                       Email address

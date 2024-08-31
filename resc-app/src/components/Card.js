@@ -6,7 +6,6 @@ import Chatlog from './Chatlog';
 export default function CardExample()  {
   return (
     <>
-    <Navbar></Navbar>
     <div className="container mt-5">
       <div className="row">
         <div className="col-md-4">
